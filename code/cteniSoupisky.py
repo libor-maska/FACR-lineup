@@ -1,7 +1,10 @@
 from bs4 import BeautifulSoup
+from pathlib import Path
+
+ZAPIS = Path(__file__).parent.parent / "data" / "zapis.html"
 
 # otevřít zapis.html soubor
-with open("../soupiska/zapis.html", encoding="utf-8") as f:
+with open(ZAPIS, encoding="utf-8") as f:
     html = f.read()
 
 # parser pro čtení html jako stromu
