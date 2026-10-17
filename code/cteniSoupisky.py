@@ -17,7 +17,8 @@ def zpracuj_radky(radek):
     facr_id = id_a_rocnik.split(",")[0]
 
     return {"prijmeni": prijmeni, "jmeno": jmeno, "facr_id": facr_id, "dres": dres}
-    
+
+
 # najde tabulku pod nadpisem a vrátí seznam hráčů
 def najdi_hrace(soup, text_nadpis):
     nadpis = soup.find(string=text_nadpis)
@@ -32,6 +33,7 @@ def najdi_hrace(soup, text_nadpis):
     return hraci
 
 
+# vypíše tabulku hráčů týmu
 def vypis_tabulku(nazev, hraci):
     print(f"\n== {nazev} ==")
     print(f"{'Příjmení':<20} {'Jméno':<12} {'FAČR ID':<10} {'Dres':>4}")
