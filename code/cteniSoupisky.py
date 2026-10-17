@@ -3,13 +3,8 @@ from pathlib import Path
 
 ZAPIS = Path(__file__).parent.parent / "data" / "zapis.html"
 
-# otevřít zapis.html soubor
-with open(ZAPIS, encoding="utf-8") as f:
-    html = f.read()
-
-# parser pro čtení html jako stromu
-soup = BeautifulSoup(html, "html.parser")
-
+# funkce pro zpracování řádků
+# rozdělí řádky na sloupce prijmeni, jmeno, facr_id, dres
 def zpracuj_radky(radek):
     bunky = radek.find_all("td")
 
@@ -23,33 +18,44 @@ def zpracuj_radky(radek):
 
     return {"prijmeni": prijmeni, "jmeno": jmeno, "facr_id": facr_id, "dres": dres}
     
+# najde tabulku pod nadpisem a vrátí seznam hráčů
+def najdi_hrace(soup, text_nadpis):
+    nadpis = soup.find(string=text_nadpis)
+    tabulka = nadpis.find_next("table")
+
+    hraci = []
+
+    for radek in tabulka.find_all("tr"):
+        if not radek.find_all("td"):
+            continue
+        hraci.append(zpracuj_radky(radek))
+    return hraci
 
 
-# DOMÁCÍ
-# najít a vypsat nadpis Domácí
-nadpis = soup.find(string="Hráči domácí")
-print("Nadpis: ", nadpis)
-
-# najít a vypsat další tabulku za nadpisem Domácí
-tabulka = nadpis.find_next("table")
-for radek in tabulka.find_all("tr"):
-    if not radek.find_all("td"):
-        continue
-    hrac = zpracuj_radky(radek)
-    print(hrac)
+def vypis_tabulku(nazev, hraci):
+    print(f"\n== {nazev} ==")
+    print(f"{'Příjmení':<20} {'Jméno':<12} {'FAČR ID':<10} {'Dres':>4}")
+    for hrac in hraci:
+        print(f"{hrac['prijmeni']:<20} {hrac['jmeno']:<12} {hrac['facr_id']:<10} {hrac['dres']:>4}")
 
 
-# HOSTÉ
-nadpis = soup.find(string="Hráči hosté")
-print("Nadpis: ", nadpis)
+def main():
+    # otevřít zapis.html soubor
+    with open(ZAPIS, encoding="utf-8") as f:
+        html = f.read()
 
-tabulka = nadpis.find_next("table")
-for radek in tabulka.find_all("tr"):
-    if not radek.find_all("td"):
-        continue
-    hrac = zpracuj_radky(radek)
-    print(hrac)
+    # parser pro čtení html jako stromu
+    soup = BeautifulSoup(html, "html.parser")
 
-# Domácí / Hosté <- <h2>
-# Tabulka <- <table style="width:100%">
-# Hráč <- <tr> (4 <td>)
+    # uloží hráče jako seznam
+    domaci = najdi_hrace(soup, "Hráči domácí")
+    hoste = najdi_hrace(soup, "Hráči hosté")
+
+    # vypíše hráče 
+    vypis_tabulku("Domácí", domaci)
+    vypis_tabulku("Hosté", hoste)
+
+
+
+if __name__ == "__main__":
+    main()
