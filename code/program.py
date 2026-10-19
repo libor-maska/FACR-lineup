@@ -6,7 +6,7 @@ import sys
 # Stránka přehledu soutěží isFAČR
 URL_PREHLED = "https://is.fotbal.cz/public/souteze/prehled-soutezi.aspx?sport=fotbal"
 
-# Rozloží číslo utkání a získá soutěž, kolo a pořadí zápasu v kole
+# Rozloží číslo utkání a získá soutěž a kolo
 def rozloz_id_zapasu(cislo_utkani):
     soutez = cislo_utkani[0:10]
     kolo = int(cislo_utkani[10:12])
@@ -35,7 +35,7 @@ def najdi_soutez(soutez):
 
     # Najít detail ve výsledcích
     for odkaz in vysledek.find_all("a", href=True):
-        if "detail-souteze" in odkaz ["href"]:
+        if "detail-souteze" in odkaz["href"]:
             return odkaz["href"]
 
     return None
@@ -113,21 +113,22 @@ def vypis_tabulku(nazev, hraci):
 
 def main():
     # Kontrola a načtení čísla utkání z argumentu
-    if len(sys.argv) != 2 or len(sys.argv[1]) != 14 :
-        sys.exit("Zadej platné číslo utkání")
-    else:
-        cislo_utkani = sys.argv[1]
+    if len(sys.argv) != 2 or len(sys.argv[1]) != 14:
+        sys.exit("Zadej platné číslo utkání")   
+    cislo_utkani = sys.argv[1]
 
     # Rozložení
     soutez, kolo = rozloz_id_zapasu(cislo_utkani)
 
     odkaz = najdi_soutez(soutez)
+    if odkaz is None:
+        sys.exit("Soutěž " + soutez + " nenalezena")
 
     # Získat URL zápisu
     url_souteze = urljoin(URL_PREHLED, odkaz)
     url_zapisu = najdi_zapis(url_souteze, kolo, cislo_utkani)
 
-    if(url_zapisu is None):
+    if url_zapisu is None:
         sys.exit("Zápas " + cislo_utkani + " nenalezen")
 
     # html zápisu
