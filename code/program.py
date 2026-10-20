@@ -1,10 +1,15 @@
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
+from pathlib import Path
 import requests
 import sys
+import csv
 
 # Stránka přehledu soutěží isFAČR
 URL_PREHLED = "https://is.fotbal.cz/public/souteze/prehled-soutezi.aspx?sport=fotbal"
+
+SLOZKA = Path(__file__).parent.parent / "data"
+SLOZKA.mkdir(exist_ok=True)
 
 # Rozloží číslo utkání a získá soutěž a kolo
 def rozloz_id_zapasu(cislo_utkani):
@@ -111,6 +116,23 @@ def vypis_tabulku(nazev, hraci):
         print(f"{hrac['prijmeni']:<20} {hrac['jmeno']:<12} {hrac['facr_id']:<10} {hrac['dres']:>4}")
 
 
+# uložení do CSV
+def uloz_csv(cislo_utkani, domaci, hoste):
+    sloupce = ["tym", "jmeno", "prijmeni", "facr_id", "dres"]
+
+    soubor = str(SLOZKA) + "\\" + str(cislo_utkani) + ".csv"
+
+    with open(soubor, "w", newline="", encoding="utf-8-sig") as f:
+        writer = csv.DictWriter(f, fieldnames=sloupce, delimiter=";")
+        writer.writeheader()
+
+        for hrac in domaci:
+            writer.writerow({"tym": "Domácí", **hrac})
+        for hrac in hoste:
+            writer.writerow({"tym": "Hosté", **hrac})
+
+
+
 def main():
     # Kontrola a načtení čísla utkání z argumentu
     if len(sys.argv) != 2 or len(sys.argv[1]) != 14:
@@ -135,11 +157,15 @@ def main():
     zapis = requests.get(url_zapisu)
     soup = BeautifulSoup(zapis.text, "html.parser")
 
+    
+
     domaci = najdi_hrace(soup, "Hráči domácí")
     hoste = najdi_hrace(soup, "Hráči hosté")
 
     vypis_tabulku("Domácí", domaci)
     vypis_tabulku("Hosté", hoste)
+
+    uloz_csv(cislo_utkani, domaci, hoste)
 
 
 if __name__ == "__main__":
